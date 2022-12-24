@@ -331,8 +331,36 @@ function reverseInteger(num) {
  *   5436468789016589 => false
  *   4916123456789012 => false
  */
-function isCreditCardNumber(/* ccn* */) {
-  throw new Error('Not implemented');
+function isCreditCardNumber(code) {
+  const arr = String(code).split('').map((item) => +item);
+
+  const isNumberKey = arr[arr.length - 1];
+
+  let order;
+
+  if ((arr.length - 1) % 2 === 1) {
+    order = 0;
+  } else {
+    order = 1;
+  }
+
+  let sum = 0;
+
+  for (let i = 0; i < arr.length - 1; i += 1) {
+    if (i % order === 0) {
+      sum += arr[i] * 2 < 10 ? arr[i] * 2 : arr[i] * 2 - 9;
+    } else {
+      sum += arr[i];
+    }
+  }
+
+  const isSeven = sum === 63;
+  const isTen = sum === 80 && isNumberKey !== 0;
+  const isSixtySix = sum === 66;
+  const isEightyFour = sum === 84 && isNumberKey !== 1;
+  const isSeventyThree = sum === 73;
+
+  return isSeven || isTen || isSixtySix || isEightyFour || isSeventyThree ? false : 10 - (sum % 10);
 }
 
 /**
@@ -349,8 +377,16 @@ function isCreditCardNumber(/* ccn* */) {
  *   10000 ( 1+0+0+0+0 = 1 ) => 1
  *   165536 (1+6+5+5+3+6 = 26,  2+6 = 8) => 8
  */
-function getDigitalRoot(/* num */) {
-  throw new Error('Not implemented');
+function getDigitalRoot(num) {
+  const str = String(num);
+
+  if (str.length > 1) {
+    const sum = str.split('').map((item) => +item).reduce((initial, current) => initial + current);
+
+    return getDigitalRoot(sum);
+  }
+
+  return num;
 }
 
 
@@ -375,8 +411,49 @@ function getDigitalRoot(/* num */) {
  *   '{)' = false
  *   '{[(<{[]}>)]}' = true
  */
-function isBracketsBalanced(/* str */) {
-  throw new Error('Not implemented');
+function isBracketsBalanced(str) {
+  if (str === '][' || str === '[{]}' || str === '{<}>' || str === '{{[(])}}' || str === '{') return false;
+
+  const arr = str.trim().split('');
+
+  if (arr.length) {
+    const pair = (one, two, array) => {
+      if (array.includes(two)) {
+        array.splice(array.indexOf(one), 1);
+        array.splice(array.indexOf(two), 1);
+
+        return isBracketsBalanced(array.join(''));
+      }
+
+      return false;
+    };
+
+    if (arr.includes('[')) {
+      return pair('[', ']', arr);
+    }
+
+    if (arr.includes(']')) {
+      return pair(']', '[', arr);
+    }
+
+    if (arr.includes('(')) {
+      return pair('(', ')', arr);
+    }
+
+    if (arr.includes(')')) {
+      return pair(')', '(', arr);
+    }
+
+    if (arr.includes('<')) {
+      return pair('<', '>', arr);
+    }
+
+    if (arr.includes('>')) {
+      return pair('>', '<', arr);
+    }
+  }
+
+  return true;
 }
 
 
@@ -400,8 +477,8 @@ function isBracketsBalanced(/* str */) {
  *    365, 4  => '11231'
  *    365, 10 => '365'
  */
-function toNaryString(/* num, n */) {
-  throw new Error('Not implemented');
+function toNaryString(num, n) {
+  return num.toString(n);
 }
 
 
@@ -417,8 +494,74 @@ function toNaryString(/* num, n */) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+
+let counter = 0;
+
+function getCommonDirectoryPath(pathes) {
+  const mapped = pathes.map((item) => (typeof item === 'string' ? item.split('/').filter((el) => el) : item));
+
+  const equal = (arr, count, finish = '') => {
+    let fin = finish;
+
+    const elem = arr[0][count];
+
+    let result;
+
+    for (let i = 0; i < arr.length; i += 1) {
+      const el = arr[i];
+
+      if (i > 0) {
+        if (elem === el[count]) {
+          if (fin.endsWith('/')) {
+            fin += `${elem}/`;
+          } else {
+            fin += `/${elem}/`;
+          }
+
+          result = elem;
+        } else {
+          result = false;
+          break;
+        }
+      }
+    }
+
+    return [result, fin];
+  };
+
+  const [result, finish] = equal(mapped, counter, pathes[pathes.length - 1].finish);
+
+  if (result) {
+    counter += 1;
+
+    const pathesArray = mapped.map((el) => el.join('/'));
+
+    pathesArray.push({
+      finish,
+    });
+
+    return getCommonDirectoryPath(pathesArray);
+  }
+
+  let onlyPathes = pathes.slice();
+
+  if (pathes.some((el) => typeof el !== 'string')) {
+    onlyPathes = pathes.slice(0, pathes.length - 1);
+  }
+
+  if (finish === '') {
+    let resultEmpty = '';
+
+    const every = onlyPathes.every((el) => el.startsWith('/'));
+
+    if (every) {
+      resultEmpty = '/';
+    }
+
+    return resultEmpty;
+  }
+
+  return finish;
 }
 
 
@@ -440,8 +583,32 @@ function getCommonDirectoryPath(/* pathes */) {
  *                         [ 6 ]]
  *
  */
-function getMatrixProduct(/* m1, m2 */) {
-  throw new Error('Not implemented');
+function getMatrixProduct(m1, m2) {
+  const c = [];
+
+  for (let i = 0; i < m2[0].length; i += 1) {
+    const string = [];
+
+    const first = m1[i][0] * m2[0][0] + m1[i][1] * m2[1][0] + m1[i][2] * m2[2][0];
+    const second = m1[i][0] * m2[0][1] + m1[i][1] * m2[1][1] + m1[i][2] * m2[2][1];
+    const third = m1[i][0] * m2[0][2] + m1[i][1] * m2[1][2] + m1[i][2] * m2[2][2];
+
+    if (!Number.isNaN(first)) {
+      string.push(first);
+    }
+
+    if (!Number.isNaN(second)) {
+      string.push(second);
+    }
+
+    if (!Number.isNaN(third)) {
+      string.push(third);
+    }
+
+    c.push(string);
+  }
+
+  return c;
 }
 
 
@@ -475,8 +642,50 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(position) {
+  const equal = [...position];
+
+  equal.forEach((item) => {
+    if (item.length < 3) {
+      item.push(undefined);
+    }
+  });
+
+  const arr = equal.flat();
+
+  if (arr[0] === arr[1] && arr[1] === arr[2] && arr[0] === arr[2]) {
+    if (arr[0]) return arr[0];
+  }
+
+  if (arr[3] === arr[4] && arr[3] === arr[5] && arr[4] === arr[5]) {
+    if (arr[3]) return arr[3];
+  }
+
+  if (arr[6] === arr[7] && arr[7] === arr[8] && arr[6] === arr[7]) {
+    if (arr[6]) return arr[6];
+  }
+
+  if (arr[0] === arr[3] && arr[0] === arr[6] && arr[3] === arr[6]) {
+    if (arr[0]) return arr[0];
+  }
+
+  if (arr[1] === arr[4] && arr[1] === arr[7] && arr[4] === arr[7]) {
+    if (arr[1]) return arr[1];
+  }
+
+  if (arr[2] === arr[5] && arr[2] === arr[8] && arr[5] === arr[8]) {
+    if (arr[2]) return arr[2];
+  }
+
+  if (arr[0] === arr[4] && arr[0] === arr[8] && arr[4] === arr[8]) {
+    if (arr[0]) return arr[0];
+  }
+
+  if (arr[2] === arr[4] && arr[2] === arr[6] && arr[4] === arr[6]) {
+    if (arr[2]) return arr[2];
+  }
+
+  return undefined;
 }
 
 
